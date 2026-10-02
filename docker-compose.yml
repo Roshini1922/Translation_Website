@@ -1,0 +1,17 @@
+services:
+  libretranslate:
+    image: libretranslate/libretranslate:latest
+    ports:
+      - "5000:5000"
+    environment:
+      LT_LOAD_ONLY: "en,ta,hi,te,ml,kn,bn,mr,gu,pa,ur,es,fr,de,it,pt,ja,ko,zh,ar,ru"
+    command:
+      - --update-models
+      - --load-only
+      - en,ta,hi,te,ml,kn,bn,mr,gu,pa,ur,es,fr,de,it,pt,ja,ko,zh,ar,ru
+    volumes:
+      - libretranslate_models:/home/libretranslate/.local
+
+volumes:
+  libretranslate_models:
+

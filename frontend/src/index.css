@@ -1,0 +1,66 @@
+:root {
+  --text: #e5e7eb;
+  --text-h: #ffffff;
+  --bg: #050816;
+  --border: rgba(255, 255, 255, 0.15);
+  --accent: #a855f7;
+  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --mono: ui-monospace, Consolas, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--sans);
+  color: white;
+
+  background:
+          linear-gradient(
+                  rgba(3, 8, 30, 0.35),
+                  rgba(3, 8, 30, 0.35)
+          ),
+          url("/translator-bg.png");
+
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+}
+
+#root {
+  width: 1126px;
+  max-width: 100%;
+  min-height: 100vh;
+  margin: 0 auto;
+  background: transparent;
+}
+
+h1,
+h2 {
+  color: white;
+  font-family: var(--heading);
+}
+
+h1 {
+  font-size: 56px;
+  margin: 32px 0;
+}
+
+h2 {
+  font-size: 24px;
+}
+
+p {
+  margin: 0;
+}
+
+textarea,
+select,
+button {
+  font-family: inherit;
+}
