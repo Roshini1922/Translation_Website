@@ -24,6 +24,10 @@ function App() {
     "Chinese",
     "Arabic",
     "Russian",
+    "Dutch",
+    "Turkish",
+    "Indonesian",
+    "Polish",
   ];
 
   const [fromLanguage, setFromLanguage] = useState("English");
