@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 )
 
 type TranslationRequest struct {
@@ -18,7 +19,7 @@ type TranslationRequest struct {
 type GoogleTranslationResponse []interface{}
 
 func translateHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Origin", "https://learn.srilakshmiretail.in")
 	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 	w.Header().Set("Content-Type", "application/json")
@@ -48,12 +49,23 @@ func translateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	source := languageCode(request.SourceLang)
-	target := languageCode(request.TargetLang)
+	source, sourceOK := languageCode(request.SourceLang)
+	target, targetOK := languageCode(request.TargetLang)
+
+	if !sourceOK || !targetOK {
+		http.Error(w, "Unsupported language", http.StatusBadRequest)
+		return
+	}
 
 	if source == target {
 		json.NewEncoder(w).Encode(map[string]string{
 			"translation": text,
+		})
+		return
+	}
+	if translated, ok := knownTranslation(text, source, target); ok {
+		json.NewEncoder(w).Encode(map[string]string{
+			"translation": translated,
 		})
 		return
 	}
@@ -89,7 +101,10 @@ func translateChunk(text string, source string, target string) (string, error) {
 	params.Set("q", text)
 	params.Set("langpair", source+"|"+target)
 
-	response, err := http.Get(apiURL + "?" + params.Encode())
+	client := &http.Client{
+		Timeout: 10 * time.Second,
+	}
+	response, err := client.Get(apiURL + "?" + params.Encode())
 	if err != nil {
 		return "", err
 	}
@@ -169,52 +184,62 @@ func splitText(text string, maxLength int) []string {
 	return chunks
 }
 
-func languageCode(language string) string {
-
+func languageCode(language string) (string, bool) {
 	codes := map[string]string{
-
-		"English": "en",
-		"Tamil":   "ta",
-		"Hindi":   "hi",
-		"Telugu":  "te",
-		"Malayalam": "ml",
-		"Kannada":   "kn",
-		"Bengali":   "bn",
-		"Marathi":   "mr",
-		"Gujarati":  "gu",
-		"Punjabi":   "pa",
-		"Urdu":      "ur",
-
+		"English":    "en",
+		"Tamil":      "ta",
+		"Hindi":      "hi",
+		"Telugu":     "te",
+		"Malayalam":  "ml",
+		"Kannada":    "kn",
+		"Bengali":    "bn",
+		"Marathi":    "mr",
+		"Gujarati":   "gu",
+		"Punjabi":    "pa",
+		"Urdu":       "ur",
 		"Spanish":    "es",
 		"French":     "fr",
 		"German":     "de",
 		"Italian":    "it",
 		"Portuguese": "pt",
-
-		"Japanese": "ja",
-		"Korean":   "ko",
-		"Chinese":  "zh-CN",
-
-		"Arabic":  "ar",
-		"Russian": "ru",
+		"Japanese":   "ja",
+		"Korean":     "ko",
+		"Chinese":    "zh-CN",
+		"Arabic":     "ar",
+		"Russian":    "ru",
 		"Dutch":      "nl",
-        "Turkish":    "tr",
-        "Indonesian": "id",
-        "Polish":     "pl",
+		"Turkish":    "tr",
+		"Indonesian": "id",
+		"Polish":     "pl",
 	}
 
-	if code, ok := codes[language]; ok {
-		return code
+	code, ok := codes[strings.TrimSpace(language)]
+	return code, ok
+}
+
+func knownTranslation(text, source, target string) (string, bool) {
+	if source != "en" || target != "ta" {
+		return "", false
 	}
 
-	return "en"
+	phrases := map[string]string{
+		"hello":                "வணக்கம்",
+		"hi":                   "வணக்கம்",
+		"thank you":            "நன்றி",
+		"good morning":         "காலை வணக்கம்",
+		"how are you?":         "நீங்கள் எப்படி இருக்கிறீர்கள்?",
+		"where are you going?": "நீங்கள் எங்கே போகிறீர்கள்?",
+	}
+
+	translation, ok := phrases[strings.ToLower(strings.TrimSpace(text))]
+	return translation, ok
 }
 
 func main() {
 
 	http.HandleFunc("/translate", translateHandler)
 
-	fmt.Println("Translation backend running on http://localhost:8080")
+	fmt.Println("Translation backend running on https://localhost:8080")
 
 	err := http.ListenAndServe(":8080", nil)
 

@@ -46,7 +46,7 @@ function App() {
     setTranslatedText("");
 
     try {
-      const response = await fetch("http://localhost:8080/translate", {
+      const response = await fetch("https://learn.api.srilakshmiretail.in/translate", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
