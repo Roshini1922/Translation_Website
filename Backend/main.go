@@ -129,11 +129,14 @@ func translateChunk(text string, source string, target string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-
 	translation := strings.TrimSpace(data.ResponseData.TranslatedText)
-
 	if translation == "" {
 		return "", fmt.Errorf("empty translation response")
+	}
+
+	if strings.Contains(strings.ToUpper(translation), "QUERY LENGTH LIMIT EXCEEDED") ||
+		strings.Contains(strings.ToUpper(translation), "QUERY LENGTH LIMIT EXCEDEED") {
+		return "", fmt.Errorf("MyMemory returned a query length limit error")
 	}
 
 	return translation, nil
@@ -229,6 +232,8 @@ func knownTranslation(text, source, target string) (string, bool) {
 		"good morning":         "காலை வணக்கம்",
 		"how are you?":         "நீங்கள் எப்படி இருக்கிறீர்கள்?",
 		"where are you going?": "நீங்கள் எங்கே போகிறீர்கள்?",
+		"hello, how are you?":  "வணக்கம், நீங்கள் எப்படி இருக்கிறீர்கள்?",
+		"hello how are you":    "வணக்கம், நீங்கள் எப்படி இருக்கிறீர்கள்?",
 	}
 
 	translation, ok := phrases[strings.ToLower(strings.TrimSpace(text))]
